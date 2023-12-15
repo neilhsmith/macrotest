@@ -1,4 +1,6 @@
 import { create } from "zustand"
+import { Button } from "./components/ui/button"
+import { DatePicker } from "./components/date-picker"
 
 type DateState = {
   date: Date
@@ -23,18 +25,17 @@ function App() {
   }
 
   return (
-    <div className="bg-slate-50 h-screen flex flex-col items-center justify-start gap-y-8">
+    <div className="bg-slate-50 h-screen flex flex-col items-center justify-start gap-y-8 py-2">
       <div className="flex gap-4">
-        <button className="border" onClick={() => updateDate(-1)}>
-          back
-        </button>
-        <div className="border">{state.date.toDateString()}</div>
-        <button className="border" onClick={() => updateDate(1)}>
-          next
-        </button>
+        <Button onClick={() => updateDate(-1)}>{"<"}</Button>
+        <DatePicker
+          date={state.date}
+          onSelect={(date) => state.update(date ?? new Date())}
+        />
+        <Button onClick={() => updateDate(1)}>{">"}</Button>
       </div>
       <div className="flex gap-4">
-        <div>todo</div>
+        <div>{state.date.toDateString()}</div>
       </div>
     </div>
   )
