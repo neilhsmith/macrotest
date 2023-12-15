@@ -65,7 +65,7 @@ namespace Macrotest.Api.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedOn = table.Column<DateOnly>(type: "date", nullable: false),
                     ServingSize = table.Column<int>(type: "int", nullable: false),
                     FoodItemId = table.Column<int>(type: "int", nullable: true),
                     QuickAddId = table.Column<int>(type: "int", nullable: true)

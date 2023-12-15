@@ -3,7 +3,7 @@ namespace Macrotest.Api.Models;
 public class TrackedThing
 {
   public int Id { get; set; }
-  public DateTime CreatedAt { get; set; }
+  public DateOnly CreatedOn { get; set; }
   public int ServingSize { get; set; }
 
   public int? FoodItemId { get; set; }

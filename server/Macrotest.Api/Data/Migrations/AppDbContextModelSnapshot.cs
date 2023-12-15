@@ -129,8 +129,8 @@ namespace Macrotest.Api.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("CreatedOn")
+                        .HasColumnType("date");
 
                     b.Property<int?>("FoodItemId")
                         .HasColumnType("int");

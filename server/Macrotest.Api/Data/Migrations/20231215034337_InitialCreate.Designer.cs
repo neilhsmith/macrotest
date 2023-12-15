@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Macrotest.Api.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231214045928_InitialCreate")]
+    [Migration("20231215034337_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -132,8 +132,8 @@ namespace Macrotest.Api.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("CreatedOn")
+                        .HasColumnType("date");
 
                     b.Property<int?>("FoodItemId")
                         .HasColumnType("int");
