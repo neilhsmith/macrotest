@@ -17,7 +17,7 @@ public static class GetBrandSummary {
     public async Task<BrandSummaryDto> Handle(Query request, CancellationToken cancellationToken) {
       var brand = await _dbContext.Brands
         .Include(b => b.Foods)
-        .FirstOrDefaultAsync(b => b.Id == request.Id);
+        .FirstOrDefaultAsync(b => b.Id == request.Id, cancellationToken);
 
       return new BrandSummaryDto {
         Id = brand.Id,

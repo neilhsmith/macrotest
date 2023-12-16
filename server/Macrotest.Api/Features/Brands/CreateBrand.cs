@@ -1,3 +1,4 @@
+using FluentValidation;
 using MacroTest.Api.Data;
 using MediatR;
 
@@ -14,6 +15,9 @@ public static class CreateBrand {
     }
     
     public async Task<BrandSummaryDto> Handle(Command request, CancellationToken cancellationToken) {
+      var validator = new CreateBrandDtoValidator();
+      await validator.ValidateAndThrowAsync(request.CreateBrandDto, cancellationToken);
+      
       var brand = new Brand {
         Name = request.CreateBrandDto.Name
       };
@@ -33,4 +37,12 @@ public static class CreateBrand {
 
 public class CreateBrandDto {
   public required string Name { get; set; }
+}
+
+public class CreateBrandDtoValidator : AbstractValidator<CreateBrandDto> {
+  public CreateBrandDtoValidator() {
+    RuleFor(b => b.Name)
+      .NotEmpty()
+      .MaximumLength(128);
+  }
 }

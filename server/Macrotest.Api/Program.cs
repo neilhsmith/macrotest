@@ -1,5 +1,8 @@
 using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using Hellang.Middleware.ProblemDetails;
+using Macrotest.Api;
 using MacroTest.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Pebble.Api.Configurations;
@@ -12,9 +15,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     builder => builder.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
 builder.Services
+  .ConfigureProblemDetails();
+
+builder.Services
   .AddControllers()
-  .AddJsonOptions(options =>
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+  .AddJsonOptions(options => {
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+  });
 
 builder.Services.AddMediatR(config => config
   .RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
@@ -31,6 +39,7 @@ if (app.Environment.IsDevelopment()) {
   });
 }
 
+app.UseProblemDetails();
 app.UseHttpsRedirection();
 app.UseRouting();
 
