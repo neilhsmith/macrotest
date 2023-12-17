@@ -14,6 +14,15 @@ builder.Services.AddDbContext<AppDbContext>(options =>
   options.UseSqlServer(connectionString,
     builder => builder.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
+builder.Services.AddCors(options => {
+  options.AddDefaultPolicy(policy => {
+    policy
+      .AllowAnyOrigin()
+      .AllowAnyHeader().AllowAnyMethod()
+      .WithExposedHeaders("X-Pagination");
+  });
+});
+
 builder.Services
   .AddAutoMapper(Assembly.GetExecutingAssembly());
 
@@ -45,6 +54,7 @@ if (app.Environment.IsDevelopment()) {
 app.UseProblemDetails();
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors();
 
 app.MapControllers();
 
