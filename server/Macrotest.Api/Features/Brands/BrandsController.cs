@@ -16,18 +16,21 @@ public class BrandsController : ControllerBase {
     _mediator = mediator;
   }
 
+  [ProducesResponseType(200)]
+  [ProducesResponseType(404)]
   [HttpGet("{id:int}", Name = "GetBrandSummary")]
-  public async Task<ActionResult<BrandSummaryDto>> GetBrandSummary(int id) {
+  public async Task<ActionResult<BrandSummaryDto>> GetBrandSummary(int id, CancellationToken cancellationToken) {
     var query = new GetBrandSummary.Query(id);
-    var response = await _mediator.Send(query);
+    var response = await _mediator.Send(query, cancellationToken);
     
     return Ok(response);
   }
 
+  [ProducesResponseType(200)]
   [HttpGet(Name = "GetBrandSummaryList")]
-  public async Task<ActionResult<PagedList<BrandSummaryDto>>> GetBrands([FromQuery] BrandPaginationParametersDto dto) {
+  public async Task<ActionResult<PagedList<BrandSummaryDto>>> GetBrands([FromQuery] BrandPaginationParametersDto dto, CancellationToken cancellationToken) {
     var query = new GetBrandSummaryList.Query(dto);
-    var response = await _mediator.Send(query);
+    var response = await _mediator.Send(query, cancellationToken);
     
     var paginationMetadata = new
     {
@@ -46,11 +49,34 @@ public class BrandsController : ControllerBase {
     return Ok(response);
   }
 
+  [ProducesResponseType(201)]
+  [ProducesResponseType(422)]
   [HttpPost(Name = "CreateBrand")]
-  public async Task<ActionResult<BrandSummaryDto>> CreateBrand([FromBody] CreateBrandDto dto) {
+  public async Task<ActionResult<BrandSummaryDto>> CreateBrand([FromBody] UpsertBrandDto dto) {
     var command = new CreateBrand.Command(dto);
     var response = await _mediator.Send(command);
 
     return CreatedAtRoute("GetBrandSummary", new { response.Id }, response);
-  } 
+  }
+
+  [ProducesResponseType(200)]
+  [ProducesResponseType(404)]
+  [ProducesResponseType(422)]
+  [HttpPut("{id:int}", Name = "UpdateBrand")]
+  public async Task<ActionResult<BrandSummaryDto>> UpdateBrand(int id, [FromBody] UpsertBrandDto dto) {
+    var command = new UpdateBrand.Command(id, dto);
+    var response = await _mediator.Send(command);
+
+    return Ok(response);
+  }
+
+  [ProducesResponseType(204)]
+  [ProducesResponseType(404)]
+  [HttpDelete("{id:int}", Name = "DeleteBrand")]
+  public async Task<ActionResult> DeleteBrand(int id) {
+    var command = new DeleteBrand.Command(id);
+    await _mediator.Send(command);
+
+    return NoContent();
+  }
 }

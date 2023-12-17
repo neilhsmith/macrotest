@@ -1,3 +1,4 @@
+using AutoMapper;
 using MacroTest.Api.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -12,9 +13,11 @@ public static class GetBrandSummaryList {
 
   public sealed class Handler : IRequestHandler<Query, PagedList<BrandSummaryDto>> {
     private readonly AppDbContext _dbContext;
+    private readonly IMapper _mapper;
 
-    public Handler(AppDbContext dbContext) {
+    public Handler(AppDbContext dbContext, IMapper mapper) {
       _dbContext = dbContext;
+      _mapper = mapper;
     }
 
     public async Task<PagedList<BrandSummaryDto>> Handle(Query request, CancellationToken cancellationToken) {
@@ -26,13 +29,8 @@ public static class GetBrandSummaryList {
       var collection = _dbContext.Brands.Include(b => b.Foods).AsNoTracking();
       var appliedCollection = collection.ApplyQueryKit(queryKitData);
 
-      var brandDtos = appliedCollection.Select(brand => new BrandSummaryDto {
-        Id = brand.Id,
-        CreatedAt = brand.CreatedAt,
-        Name = brand.Name,
-        FoodCount = brand.Foods.Count
-      });
-
+      var brandDtos = appliedCollection.Select(brand => _mapper.Map<Brand, BrandSummaryDto>(brand));
+      
       return await PagedList<BrandSummaryDto>.CreateAsync(
         brandDtos,
         request.BrandPaginationParametersDto.PageNumber,

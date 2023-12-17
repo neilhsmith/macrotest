@@ -15,6 +15,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     builder => builder.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
 builder.Services
+  .AddAutoMapper(Assembly.GetExecutingAssembly());
+
+builder.Services
   .ConfigureProblemDetails();
 
 builder.Services
