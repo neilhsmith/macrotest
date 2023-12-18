@@ -1,7 +1,4 @@
-import DataTableBase, {
-  Alignment,
-  TableProps,
-} from "react-data-table-component"
+import DataTableBase, { Alignment, TableProps } from "react-data-table-component"
 import { RxCaretSort } from "react-icons/rx"
 import { Button } from "./ui/button"
 
@@ -36,17 +33,14 @@ type DeleteContextActionsProps = {
   onClick: () => void
 }
 
-export function DeleteContextActions({
-  selectedItemCount,
-  onClick,
-}: DeleteContextActionsProps) {
+export function DeleteContextActions({ selectedItemCount, onClick }: DeleteContextActionsProps) {
   const label =
     selectedItemCount === undefined
       ? "Delete"
       : `Delete ${selectedItemCount} item${selectedItemCount > 1 ? "s" : ""}`
 
   return (
-    <Button key="delete" variant="destructive" onClick={onClick}>
+    <Button key="delete" size="sm" variant="destructive" onClick={onClick}>
       {label}
     </Button>
   )

@@ -1,5 +1,4 @@
-import { RouteObject } from "react-router-dom"
-import { Layout } from "./layout"
+import { Outlet, RouteObject } from "react-router-dom"
 import { number, route } from "react-router-typesafe-routes/dom"
 import { BrandSummaryListing } from "./listing"
 
@@ -14,13 +13,14 @@ export const BRAND_ROUTES = route(
 )
 
 export const brandRoutes: RouteObject = {
-  path: BRAND_ROUTES.path,
-  element: <Layout />,
+  path: BRAND_ROUTES.INDEX.path,
+  element: (
+    <>
+      <BrandSummaryListing />
+      <Outlet />
+    </>
+  ),
   children: [
-    {
-      path: BRAND_ROUTES.INDEX.path,
-      element: <BrandSummaryListing />,
-    },
     {
       path: BRAND_ROUTES.CREATE.path,
       element: <div>create brand</div>,
