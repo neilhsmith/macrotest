@@ -1,6 +1,8 @@
 /**
  * based on https://github.com/prezly/react-promise-modal/blob/master/src/index.ts
  * but adds componentProps & adjust types accordingly
+ *
+ * Renders a modal to its own React root.
  */
 
 import { ReactElement } from "react"
@@ -21,7 +23,7 @@ type RenderFunction<TResult, T extends PromiseModalProps<TResult>> = (props: T) 
 
 const noop = () => {}
 
-export function reactModal<TResult, T extends PromiseModalProps<TResult>>(
+export function renderUncontrolledAsyncModal<TResult, T extends PromiseModalProps<TResult>>(
   renderModal: RenderFunction<TResult, T>,
   componentProps?: Omit<T, keyof PromiseModalProps<TResult>>
 ): Promise<TResult> {

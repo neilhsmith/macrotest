@@ -10,7 +10,7 @@ import { PaginatedList, apiClient, getPaginationMetadata } from "@/lib/api-clien
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query"
 import { queryClient } from "@/lib/query-client"
 import { ConfirmationModal } from "@/modals/confirm-modal"
-import { PromiseModalProps, reactModal } from "@/modals/async-modal"
+import { PromiseModalProps, renderUncontrolledAsyncModal } from "@/modals/uncontrolled-async-modal"
 
 async function getBrandSummaryListing(page: number, pageSize: number) {
   const res = await apiClient.get<BrandSummary[]>(`/brands?PageNumber=${page}&PageSize=${pageSize}`)
@@ -101,11 +101,12 @@ export function BrandSummaryListing() {
   }
 
   const handleDeleteClick = async () => {
-    reactModal<void, ConfirmBrandsDeletionModalProps>(ConfirmBrandsDeletionModal, {
-      count: selected.length,
-    })
-      .then(() => console.log("yes"))
-      .catch(() => console.log("no"))
+    renderUncontrolledAsyncModal<void, ConfirmBrandsDeletionModalProps>(
+      ConfirmBrandsDeletionModal,
+      {
+        count: selected.length,
+      }
+    ).then(() => deleteBrandsMutation.mutate())
   }
 
   const brandSummaries = brandSummaryListingQuery.data?.result ?? []
