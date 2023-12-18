@@ -3,10 +3,17 @@ import DataTableBase, {
   TableProps,
 } from "react-data-table-component"
 import { RxCaretSort } from "react-icons/rx"
+import { Button } from "./ui/button"
 
 const sortIcon = <RxCaretSort />
 const selectProps = {
   indeterminate: (isIndeterminate: boolean) => isIndeterminate,
+}
+
+export type SelectedRowsChangeEventPayload<T> = {
+  allSelected: boolean
+  selectedCount: number
+  selectedRows: T[]
 }
 
 export function DataTable<T>(props: TableProps<T>): JSX.Element {
@@ -21,5 +28,26 @@ export function DataTable<T>(props: TableProps<T>): JSX.Element {
       subHeaderWrap
       {...props}
     />
+  )
+}
+
+type DeleteContextActionsProps = {
+  selectedItemCount?: number
+  onClick: () => void
+}
+
+export function DeleteContextActions({
+  selectedItemCount,
+  onClick,
+}: DeleteContextActionsProps) {
+  const label =
+    selectedItemCount === undefined
+      ? "Delete"
+      : `Delete ${selectedItemCount} item${selectedItemCount > 1 ? "s" : ""}`
+
+  return (
+    <Button key="delete" variant="destructive" onClick={onClick}>
+      {label}
+    </Button>
   )
 }

@@ -2,6 +2,7 @@ using System.Text.Json;
 using MacroTest.Api.Data;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Macrotest.Api.Features.Brands;
 
@@ -22,18 +23,20 @@ public class BrandsController : ControllerBase {
   public async Task<ActionResult<BrandSummaryDto>> GetBrandSummary(int id, CancellationToken cancellationToken) {
     var query = new GetBrandSummary.Query(id);
     var response = await _mediator.Send(query, cancellationToken);
-    
+
     return Ok(response);
   }
 
   [ProducesResponseType(200)]
   [HttpGet(Name = "GetBrandSummaryList")]
-  public async Task<ActionResult<PagedList<BrandSummaryDto>>> GetBrands([FromQuery] BrandPaginationParametersDto dto, CancellationToken cancellationToken) {
+  public async Task<ActionResult<PagedList<BrandSummaryDto>>> GetBrands(
+    [FromQuery] BrandPaginationParametersDto dto,
+    CancellationToken cancellationToken
+  ) {
     var query = new GetBrandSummaryList.Query(dto);
     var response = await _mediator.Send(query, cancellationToken);
-    
-    var paginationMetadata = new
-    {
+
+    var paginationMetadata = new {
       totalCount = response.TotalCount,
       pageSize = response.PageSize,
       currentPageSize = response.CurrentPageSize,
@@ -77,6 +80,17 @@ public class BrandsController : ControllerBase {
     var command = new DeleteBrand.Command(id);
     await _mediator.Send(command);
 
+    return NoContent();
+  }
+
+  [ProducesResponseType(204)]
+  [HttpPost("delete", Name = "DeleteBrands")]
+  public async Task<ActionResult> DeleteBrands([FromBody] BulkDeleteRequestDto requestDto) {
+    // TODO: create a better bulk-delete reusable command which returns a valid multi-status
+    
+    var command = new DeleteBrands.Command(requestDto);
+    var response = await _mediator.Send(command);
+    
     return NoContent();
   }
 }

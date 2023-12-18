@@ -1,23 +1,30 @@
-import { useCallback, useState } from "react"
-import { DataTable } from "@/components/data-table"
+import { useState } from "react"
+import {
+  DataTable,
+  DeleteContextActions,
+  SelectedRowsChangeEventPayload,
+} from "@/components/data-table"
 import { TableColumn } from "react-data-table-component"
 import { BrandSummary } from "./types"
-import {
-  PaginatedList,
-  apiClient,
-  getPaginationMetadata,
-} from "@/lib/api-client"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { PaginatedList, apiClient, getPaginationMetadata } from "@/lib/api-client"
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query"
+import { queryClient } from "@/lib/query-client"
+import { ConfirmationModal } from "@/modals/confirm-modal"
+import { PromiseModalProps, reactModal } from "@/modals/async-modal"
 
 async function getBrandSummaryListing(page: number, pageSize: number) {
-  const res = await apiClient.get<BrandSummary[]>(
-    `/brands?PageNumber=${page}&PageSize=${pageSize}`
-  )
+  const res = await apiClient.get<BrandSummary[]>(`/brands?PageNumber=${page}&PageSize=${pageSize}`)
 
   return {
     result: res.data,
     paginationMetadata: getPaginationMetadata(res),
   } as PaginatedList<BrandSummary>
+}
+
+async function deleteBrands(ids: number[]) {
+  await apiClient.post("/brands/delete", {
+    ids,
+  })
 }
 
 const summaryColumns: TableColumn<BrandSummary>[] = [
@@ -34,8 +41,7 @@ const summaryColumns: TableColumn<BrandSummary>[] = [
   {
     name: "Modified",
     sortable: true,
-    selector: (row) =>
-      row.modifiedAt ? new Date(row.modifiedAt).toLocaleString() : "-",
+    selector: (row) => (row.modifiedAt ? new Date(row.modifiedAt).toLocaleString() : "-"),
   },
   {
     name: "Food Count",
@@ -44,14 +50,42 @@ const summaryColumns: TableColumn<BrandSummary>[] = [
   },
 ]
 
-export const BrandSummaryListing = () => {
+/**
+ * TODO: left off here
+ * - allow extra props to be given to asyncModal
+ *   * need to pass extra props to modals sometimes but needs generics or something
+ *   - asyncModal will take an extra 'componentProps' prop which will be passed to the modal
+ *
+ * - add a create button which opens a modal w/ a create form. closes & updates the table on success
+ * - add an edit button to each row which opens a modal w/ an edit form. closes & update the table on success
+ * - error handling
+ *   - automatically show a toast if the api errors
+ *   - should errors rethrow so events still bubble to the nearest error boundary?
+ *   - or maybe certain errors should bubble while some should just show the toast?
+ * - refactor the useQuery usage here into a reusable paginated hook
+ * - maybe make a response model? i don't like that deleteBrands doesn't really return anything
+ * * if you do the above, you have a working reusable crud feature so good job
+ */
+
+export function BrandSummaryListing() {
   const [page, setPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
 
-  const fetchBrandSummaryListing = useQuery({
+  const [selected, setSelected] = useState<BrandSummary[]>([])
+  const [clearSelectedToggled, setClearSelectedToggled] = useState(false)
+
+  const brandSummaryListingQuery = useQuery({
     queryKey: ["brand-summary-list", page, perPage],
     queryFn: () => getBrandSummaryListing(page, perPage),
     placeholderData: keepPreviousData,
+  })
+
+  const deleteBrandsMutation = useMutation({
+    mutationFn: () => deleteBrands(selected.map((b) => b.id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["brand-summary-list"] })
+      setClearSelectedToggled(!clearSelectedToggled)
+    },
   })
 
   const handlePageChange = (page: number) => {
@@ -63,7 +97,21 @@ export const BrandSummaryListing = () => {
     setPerPage(perPage)
   }
 
-  const brandSummaries = fetchBrandSummaryListing.data?.result ?? []
+  const handleSelectedRowsChange = ({
+    selectedRows,
+  }: SelectedRowsChangeEventPayload<BrandSummary>) => {
+    setSelected(selectedRows)
+  }
+
+  const handleDeleteClick = async () => {
+    const confirmed = await reactModal(ConfirmBrandsDeletionModal)
+    if (confirmed) {
+      deleteBrandsMutation.mutate()
+    }
+  }
+
+  const brandSummaries = brandSummaryListingQuery.data?.result ?? []
+  const brandsCount = brandSummaryListingQuery.data?.paginationMetadata?.totalCount
 
   return (
     <div>
@@ -71,55 +119,24 @@ export const BrandSummaryListing = () => {
         title="Brands"
         columns={summaryColumns}
         data={brandSummaries}
+        clearSelectedRows={clearSelectedToggled}
+        contextActions={
+          <DeleteContextActions selectedItemCount={selected.length} onClick={handleDeleteClick} />
+        }
         highlightOnHover
         pagination
         paginationServer
-        paginationTotalRows={
-          fetchBrandSummaryListing.data?.paginationMetadata?.totalCount
-        }
-        progressPending={fetchBrandSummaryListing.isPending}
+        paginationTotalRows={brandsCount}
+        progressPending={brandSummaryListingQuery.isPending}
         selectableRows
         onChangeRowsPerPage={handlePerPageChange}
         onChangePage={handlePageChange}
+        onSelectedRowsChange={handleSelectedRowsChange}
       />
     </div>
   )
 }
 
-// export const BrandSummaryListing = () => {
-//   const state = useGetBrandSummaryListing()
-//   const [selectedRows, setSelectedRows] = useState<BrandSummary[]>()
-
-//   const handleSelectedRowsChange = useCallback(
-//     (tableState: { selectedRows: BrandSummary[] }) =>
-//       setSelectedRows(tableState.selectedRows),
-//     []
-//   )
-
-//   const contextActions = useMemo(() => {
-//     return <Button variant="destructive">Delete</Button>
-//   }, [])
-
-//   if (state.isError) {
-//     return <div>error: {state.error.message}</div>
-//   }
-
-//   if (state.isLoading) {
-//     return <div>loading...</div>
-//   }
-
-//   return (
-//     <div>
-//       <DataTable
-//         title="Brands"
-//         columns={summaryColumns}
-//         contextActions={contextActions}
-//         data={state.data ?? []}
-//         highlightOnHover
-//         pagination
-//         selectableRows
-//         onSelectedRowsChange={handleSelectedRowsChange}
-//       />
-//     </div>
-//   )
-// }
+function ConfirmBrandsDeletionModal({ isOpen, onResolve, onReject }: PromiseModalProps<void>) {
+  return <ConfirmationModal isOpen={isOpen} onDismiss={onReject} onConfirm={onResolve} />
+}
