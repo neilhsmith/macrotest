@@ -52,10 +52,6 @@ const summaryColumns: TableColumn<BrandSummary>[] = [
 
 /**
  * TODO: left off here
- * - allow extra props to be given to asyncModal
- *   * need to pass extra props to modals sometimes but needs generics or something
- *   - asyncModal will take an extra 'componentProps' prop which will be passed to the modal
- *
  * - add a create button which opens a modal w/ a create form. closes & updates the table on success
  * - add an edit button to each row which opens a modal w/ an edit form. closes & update the table on success
  * - error handling
@@ -65,6 +61,7 @@ const summaryColumns: TableColumn<BrandSummary>[] = [
  * - refactor the useQuery usage here into a reusable paginated hook
  * - maybe make a response model? i don't like that deleteBrands doesn't really return anything
  * * if you do the above, you have a working reusable crud feature so good job
+ * - maybe look into infering one or both of the reactModal generics
  */
 
 export function BrandSummaryListing() {
@@ -104,10 +101,11 @@ export function BrandSummaryListing() {
   }
 
   const handleDeleteClick = async () => {
-    const confirmed = await reactModal(ConfirmBrandsDeletionModal)
-    if (confirmed) {
-      deleteBrandsMutation.mutate()
-    }
+    reactModal<void, ConfirmBrandsDeletionModalProps>(ConfirmBrandsDeletionModal, {
+      count: selected.length,
+    })
+      .then(() => console.log("yes"))
+      .catch(() => console.log("no"))
   }
 
   const brandSummaries = brandSummaryListingQuery.data?.result ?? []
@@ -137,6 +135,26 @@ export function BrandSummaryListing() {
   )
 }
 
-function ConfirmBrandsDeletionModal({ isOpen, onResolve, onReject }: PromiseModalProps<void>) {
-  return <ConfirmationModal isOpen={isOpen} onDismiss={onReject} onConfirm={onResolve} />
+type ConfirmBrandsDeletionModalProps = {
+  count: number
+} & PromiseModalProps<void>
+
+function ConfirmBrandsDeletionModal({
+  isOpen,
+  onResolve,
+  onReject,
+  count,
+}: ConfirmBrandsDeletionModalProps) {
+  const plural = count > 1
+  const title = `Delete ${count} brand${plural ? "s" : ""}`
+
+  return (
+    <ConfirmationModal
+      isOpen={isOpen}
+      onDismiss={onReject}
+      onConfirm={onResolve}
+      title={title}
+      description="Are you sure? This action cannot be undone."
+    />
+  )
 }

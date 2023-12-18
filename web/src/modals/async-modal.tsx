@@ -1,36 +1,41 @@
-// /**
-//  * https://github.com/prezly/react-promise-modal/blob/master/src/index.ts
-//  */
+/**
+ * based on https://github.com/prezly/react-promise-modal/blob/master/src/index.ts
+ * but adds componentProps & adjust types accordingly
+ */
 
 import { ReactElement } from "react"
 import { createRoot } from "react-dom/client"
 
-export interface PromiseModalProps<R> {
+export type PromiseModalProps<TResult> = {
   isOpen: boolean
-  onResolve: Callback<R>
+  onResolve: Callback<TResult>
   onReject: Callback<void>
 }
 
 type Callback<R> = void extends R ? () => void : (value: R) => void
-type ModalCallbacks<T> = Pick<PromiseModalProps<T>, "onResolve" | "onReject">
-type RenderFunction<T> = (props: PromiseModalProps<T>) => ReactElement<unknown>
+type ModalCallbacks<TResult, T extends PromiseModalProps<TResult>> = Pick<
+  T,
+  "onResolve" | "onReject"
+>
+type RenderFunction<TResult, T extends PromiseModalProps<TResult>> = (props: T) => ReactElement
 
 const noop = () => {}
 
-export function reactModal(
-  renderModal: RenderFunction<void> | RenderFunction<unknown>
-): Promise<unknown> {
+export function reactModal<TResult, T extends PromiseModalProps<TResult>>(
+  renderModal: RenderFunction<TResult, T>,
+  componentProps?: Omit<T, keyof PromiseModalProps<TResult>>
+): Promise<TResult> {
   const container = document.createElement("div")
   document.body.appendChild(container)
 
   const root = createRoot(container)
 
-  function displayModal({ onResolve, onReject }: ModalCallbacks<unknown>) {
-    root.render(renderModal({ onResolve, onReject, isOpen: true }))
+  function displayModal({ onResolve, onReject }: ModalCallbacks<TResult, T>) {
+    root.render(renderModal({ onResolve, onReject, isOpen: true, ...componentProps } as T))
   }
 
-  function hideModal({ onResolve, onReject }: ModalCallbacks<unknown>) {
-    root.render(renderModal({ onResolve, onReject, isOpen: false }))
+  function hideModal({ onResolve, onReject }: ModalCallbacks<TResult, T>) {
+    root.render(renderModal({ onResolve, onReject, isOpen: false, ...componentProps } as T))
   }
 
   function destroyModal() {
@@ -38,22 +43,20 @@ export function reactModal(
     document.body.removeChild(container)
   }
 
-  const confirmation = new Promise((resolve) => {
-    function onSubmit(value?: unknown) {
-      if (arguments.length === 0) {
-        resolve(true)
-      } else {
-        resolve(value)
-      }
+  const confirmation = new Promise<TResult>((resolve, reject) => {
+    function onResolve(value: TResult) {
+      resolve(value)
     }
-    function onDismiss() {
-      resolve(undefined)
+
+    function onReject() {
+      reject()
     }
-    displayModal({ onResolve: onSubmit, onReject: onDismiss })
+
+    displayModal({ onResolve, onReject } as Pick<T, "onResolve" | "onReject">)
   })
 
   return confirmation.finally(() => {
-    hideModal({ onResolve: noop, onReject: noop })
+    hideModal({ onResolve: noop, onReject: noop } as Pick<T, "onResolve" | "onReject">)
     destroyModal()
   })
 }

@@ -7,10 +7,13 @@ import {
   ModalProps,
   ModalTitle,
 } from "@/modals/modal"
+import { ReactNode } from "react"
 
 export type ConfirmModelProps = {
   title?: string
   description?: string
+  cancelButton?: ReactNode
+  submitButton?: ReactNode
   onConfirm?: () => void
 }
 
