@@ -57,7 +57,6 @@ const summaryColumns: TableColumn<BrandSummary>[] = [
 
 /**
  * TODO: left off here
- * - add a create button which opens a modal w/ a create form. closes & updates the table on success
  * - add an edit button to each row which opens a modal w/ an edit form. closes & update the table on success
  * - error handling
  *   - automatically show a toast if the api errors
