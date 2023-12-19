@@ -32,14 +32,6 @@ async function deleteBrands(ids: number[]) {
   })
 }
 
-async function createBrand(name: string) {
-  const res = await apiClient.post<BrandSummary>("brands", {
-    name,
-  })
-
-  return res.data
-}
-
 const summaryColumns: TableColumn<BrandSummary>[] = [
   {
     name: "Name",
@@ -182,50 +174,5 @@ function ConfirmBrandsDeletionModal({
       title={title}
       description="Are you sure? This action cannot be undone."
     />
-  )
-}
-
-function CreateBrandModal({ isOpen, onResolve, onReject }: PromiseModalProps<BrandSummary>) {
-  const createBrandMutation = useMutation({
-    mutationFn: (name: string) => createBrand(name),
-    onSuccess: (brandSummary) => {
-      onResolve(brandSummary)
-    },
-  })
-
-  const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
-    event.preventDefault()
-
-    const formData = new FormData(event.currentTarget)
-    const name = formData.get("name")
-
-    createBrandMutation.mutate(name as string)
-  }
-
-  return (
-    <Modal isOpen={isOpen} onDismiss={onReject}>
-      <ModalHeader>
-        <ModalTitle>Create Brand</ModalTitle>
-        <ModalDescription>Lorem ipsum something or another.</ModalDescription>
-      </ModalHeader>
-      <form onSubmit={handleSubmit}>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input id="name" name="name" placeholder="Brand Name" className="col-span-3" />
-          </div>
-        </div>
-        <ModalFooter>
-          <Button type="button" variant="secondary" onClick={onReject}>
-            Cancel
-          </Button>
-          <Button type="submit" onClick={console.log}>
-            Submit
-          </Button>
-        </ModalFooter>
-      </form>
-    </Modal>
   )
 }

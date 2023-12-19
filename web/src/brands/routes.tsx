@@ -1,6 +1,7 @@
 import { Outlet, RouteObject } from "react-router-dom"
 import { number, route } from "react-router-typesafe-routes/dom"
 import { BrandSummaryListing } from "./listing"
+import { CreateBrandModal } from "./create-brand-modal"
 
 export const BRAND_ROUTES = route(
   "brands",
@@ -23,7 +24,7 @@ export const brandRoutes: RouteObject = {
   children: [
     {
       path: BRAND_ROUTES.CREATE.path,
-      element: <div>create brand</div>,
+      element: <CreateBrandModal isOpen={true} />, // always open
     },
     {
       path: BRAND_ROUTES.DETAIL.path,
