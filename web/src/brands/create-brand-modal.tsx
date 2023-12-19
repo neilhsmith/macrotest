@@ -16,11 +16,19 @@ import { BrandSummary } from "./types"
 import { FormEventHandler } from "react"
 import { Button } from "@/components/ui/button"
 import { queryClient } from "@/lib/query-client"
+import { toast } from "react-toastify"
 
 async function createBrand(name: string) {
-  const res = await apiClient.post<BrandSummary>("brands", {
-    name,
-  })
+  const res = await toast.promise(
+    apiClient.post<BrandSummary>("brands", {
+      name,
+    }),
+    {
+      pending: "Creating Brand",
+      success: "Brand created",
+      error: "Something went wrong",
+    }
+  )
 
   return res.data
 }

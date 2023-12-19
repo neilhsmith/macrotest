@@ -1,4 +1,4 @@
-import { FormEvent, FormEventHandler, useState } from "react"
+import { useState } from "react"
 import {
   DataTable,
   DeleteContextActions,
@@ -12,10 +12,8 @@ import { queryClient } from "@/lib/query-client"
 import { ConfirmationModal } from "@/modals/confirm-modal"
 import { PromiseModalProps, renderUncontrolledAsyncModal } from "@/modals/uncontrolled-async-modal"
 import { Button } from "@/components/ui/button"
-import { Modal, ModalDescription, ModalFooter, ModalHeader, ModalTitle } from "@/modals/modal"
-import { Label } from "@radix-ui/react-label"
-import { Input } from "@/components/ui/input"
 import { Link } from "react-router-dom"
+import { toast } from "react-toastify"
 
 async function getBrandSummaryListing(page: number, pageSize: number) {
   const res = await apiClient.get<BrandSummary[]>(`/brands?PageNumber=${page}&PageSize=${pageSize}`)
@@ -27,9 +25,18 @@ async function getBrandSummaryListing(page: number, pageSize: number) {
 }
 
 async function deleteBrands(ids: number[]) {
-  await apiClient.post("/brands/delete", {
-    ids,
-  })
+  const count = ids.length
+  const plural = count > 1
+  await toast.promise(
+    apiClient.post("/brands/delete", {
+      ids,
+    }),
+    {
+      pending: `Deleting ${count} Brand${plural ? "s" : ""}`,
+      success: `${count} Brand${plural ? "s" : ""} deleted`,
+      error: "Something went wrong",
+    }
+  )
 }
 
 const summaryColumns: TableColumn<BrandSummary>[] = [
