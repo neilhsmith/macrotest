@@ -65,13 +65,13 @@ const summaryColumns: TableColumn<BrandSummary>[] = [
 /**
  * TODO: left off here
  * - add an edit button to each row which opens a modal w/ an edit form. closes & update the table on success
- * - error handling
- *   - automatically show a toast if the api errors
- *   - should errors rethrow so events still bubble to the nearest error boundary?
- *   - or maybe certain errors should bubble while some should just show the toast?
+ * - fix up the whole api thing
+ *   - create an api directory & setup consistent Response / Error types
+ *   - read through https://chat.openai.com/c/ce18e710-8f52-4209-abfa-74a6ea4fadc4 for an idea of gracefully handling errors
+ * - fix up the whole form thing
+ *   - i threw the create-brand-modal's form together, can def clean this up and make the pieces reusable (there's at least a form group there)
  * - go through and make sure buttons and things are properly disabled during submits/loads (create-brand definitely isn't)
  * - refactor the useQuery usage here into a reusable paginated hook
- * - maybe make a response model? i don't like that deleteBrands doesn't really return anything
  * * if you do the above, you have a working reusable crud feature so good job
  * - maybe look into infering one or both of the reactModal generics
  */

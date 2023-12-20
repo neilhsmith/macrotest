@@ -35,7 +35,7 @@ public class UpsertBrandDtoValidator : AbstractValidator<UpsertBrandDto> {
           var exists = await dbContext.Brands.AnyAsync(b => b.Name == name, cancellationToken);
           return !exists;
         }
-      ).WithMessage("Name must be unique.");
+      ).WithMessage("{PropertyValue} is already taken.");
   }
 }
 

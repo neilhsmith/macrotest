@@ -17,20 +17,42 @@ import { FormEventHandler } from "react"
 import { Button } from "@/components/ui/button"
 import { queryClient } from "@/lib/query-client"
 import { toast } from "react-toastify"
+import { AxiosError, AxiosResponse } from "axios"
+
+type ApiError = {
+  detail: string
+  errors: Record<string, string[]>
+  status: number
+  title: string
+  traceId: string
+  type: string
+}
 
 async function createBrand(name: string) {
-  const res = await toast.promise(
-    apiClient.post<BrandSummary>("brands", {
-      name,
-    }),
-    {
-      pending: "Creating Brand",
-      success: "Brand created",
-      error: "Something went wrong",
-    }
-  )
+  try {
+    const res = await toast.promise<AxiosResponse<BrandSummary>, AxiosError<ApiError>>(
+      apiClient.post<BrandSummary>("brands", {
+        name,
+      }),
+      {
+        pending: "Creating Brand",
+        success: "Brand created",
+        error: {
+          render: (res) => {
+            const toastData = res.data
+            const response = toastData?.response
+            const message = response?.data?.title ?? "Something went wrong"
+            return message
+          },
+        },
+      }
+    )
 
-  return res.data
+    return res.data
+  } catch (err) {
+    const error = err as AxiosError<ApiError>
+    throw error.response?.data
+  }
 }
 
 type CreateBrandModal = Pick<ModalProps, "isOpen">
@@ -38,7 +60,7 @@ type CreateBrandModal = Pick<ModalProps, "isOpen">
 export const CreateBrandModal = ({ isOpen }: CreateBrandModal) => {
   const navigate = useNavigate()
 
-  const createBrandMutation = useMutation({
+  const createBrandMutation = useMutation<BrandSummary, ApiError, string, unknown>({
     mutationFn: createBrand,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brand-summary-list"] })
@@ -60,6 +82,7 @@ export const CreateBrandModal = ({ isOpen }: CreateBrandModal) => {
   }
 
   const disabled = createBrandMutation.isPending
+  const errors = createBrandMutation.error?.errors ?? {}
 
   return (
     <Modal isOpen={isOpen} onDismiss={dismiss}>
@@ -68,13 +91,27 @@ export const CreateBrandModal = ({ isOpen }: CreateBrandModal) => {
         <ModalDescription>Lorem ipsum and stuff</ModalDescription>
       </ModalHeader>
       <form onSubmit={handleSubmit}>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input id="name" name="name" placeholder="Brand name" className="col-span-3" />
-          </div>
+        <div className="mb-4 flex flex-col gap-2">
+          <Label htmlFor="name">Name</Label>
+          <Input
+            id="name"
+            name="name"
+            placeholder="Brand name"
+            autoFocus
+            className={`${!!errors["name"] && "border-red-500"}`}
+          />
+          {!!errors["name"] && (
+            <ul>
+              {errors["name"].map((err) => (
+                <li
+                  key={err}
+                  className="text-red-500 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {err}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <ModalFooter>
           <Button type="button" variant="secondary" disabled={disabled} onClick={dismiss}>
