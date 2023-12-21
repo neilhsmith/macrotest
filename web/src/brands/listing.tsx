@@ -1,10 +1,20 @@
 import { useState } from "react"
-import { BrandSummaryDto, useBrandListingQuery } from "./api"
-import { DataTable, SelectedRowsChangeEventPayload } from "@/components/data-table"
+import {
+  BRAND_LISTING_QUERY_KEY,
+  BrandSummaryDto,
+  useBrandListingQuery,
+  useDeleteBrandsMutation,
+} from "./api"
+import {
+  DataTable,
+  DeleteContextActions,
+  SelectedRowsChangeEventPayload,
+} from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 import { TableColumn } from "react-data-table-component"
 import { BRAND_ROUTES } from "./routes"
+import { queryClient } from "@/lib/query-client"
 
 const tableColumns: TableColumn<BrandSummaryDto>[] = [
   {
@@ -45,6 +55,7 @@ export const BrandListing = () => {
   const [clearSelectedToggled, setClearSelectedToggled] = useState(false)
 
   const brandlistingQuery = useBrandListingQuery({ page, pageSize })
+  const deleteBrandsMutation = useDeleteBrandsMutation()
 
   const handlePageChange = (page: number) => {
     setPage(page)
@@ -61,7 +72,15 @@ export const BrandListing = () => {
     setSelected(selectedRows)
   }
 
-  const pending = brandlistingQuery.isPending
+  const handleDeleteClick = async () => {
+    const selectedIds = selected.map((b) => b.id)
+    deleteBrandsMutation.mutate(selectedIds)
+
+    setClearSelectedToggled(!clearSelectedToggled)
+    queryClient.invalidateQueries({ queryKey: [BRAND_LISTING_QUERY_KEY] })
+  }
+
+  const pending = brandlistingQuery.isPending || deleteBrandsMutation.isPending
   const brandSummaries = brandlistingQuery.data?.items ?? []
   const brandsCount = brandlistingQuery.data?.paginationMetadata?.totalCount
 
@@ -72,9 +91,9 @@ export const BrandListing = () => {
         columns={tableColumns}
         data={brandSummaries}
         clearSelectedRows={clearSelectedToggled}
-        // contextActions={
-        //   <DeleteContextActions selectedItemCount={selected.length} onClick={handleDeleteClick} />
-        // }
+        contextActions={
+          <DeleteContextActions selectedItemCount={selected.length} onClick={handleDeleteClick} />
+        }
         highlightOnHover
         pagination
         paginationServer

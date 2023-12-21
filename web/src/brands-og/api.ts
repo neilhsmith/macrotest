@@ -1,6 +1,6 @@
 import { AxiosError, AxiosResponse } from "axios"
 import { BrandSummaryDto, UpsertBrandDto } from "./types"
-import { PaginatedList, axios, getPaginationMetadata } from "@/api/client"
+import { PaginatedList, axios, getPaginationMetadata } from "@/api/api-client"
 import { toast } from "react-toastify"
 
 export type ApiError = {
