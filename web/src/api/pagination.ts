@@ -1,4 +1,9 @@
-import axios, { type AxiosResponse } from "axios"
+import { AxiosResponse } from "axios"
+
+export type PaginatedQueryPayload = {
+  page: number
+  pageSize: number
+}
 
 export type PaginationMetadata = {
   totalCount: number
@@ -13,18 +18,15 @@ export type PaginationMetadata = {
 }
 
 export type PaginatedList<T> = {
-  result: T[]
+  items: T[]
   paginationMetadata?: PaginationMetadata
 }
 
-export const apiClient = axios.create({
-  baseURL: "https://localhost:5020/api",
-})
-
 export function getPaginationMetadata<T>(response: AxiosResponse<T>) {
   const header = response.headers["x-pagination"] as string | undefined
-
-  if (!header) return
+  if (!header) {
+    return
+  }
 
   return JSON.parse(header) as PaginationMetadata
 }

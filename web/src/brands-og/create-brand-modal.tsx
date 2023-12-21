@@ -11,56 +11,18 @@ import { BRAND_ROUTES } from "./routes"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { useMutation } from "@tanstack/react-query"
-import { apiClient } from "@/lib/api-client"
-import { BrandSummary } from "./types"
+import { BrandSummaryDto } from "./types"
 import { FormEventHandler } from "react"
 import { Button } from "@/components/ui/button"
 import { queryClient } from "@/lib/query-client"
-import { toast } from "react-toastify"
-import { AxiosError, AxiosResponse } from "axios"
-
-type ApiError = {
-  detail: string
-  errors: Record<string, string[]>
-  status: number
-  title: string
-  traceId: string
-  type: string
-}
-
-async function createBrand(name: string) {
-  try {
-    const res = await toast.promise<AxiosResponse<BrandSummary>, AxiosError<ApiError>>(
-      apiClient.post<BrandSummary>("brands", {
-        name,
-      }),
-      {
-        pending: "Creating Brand",
-        success: "Brand created",
-        error: {
-          render: (res) => {
-            const toastData = res.data
-            const response = toastData?.response
-            const message = response?.data?.title ?? "Something went wrong"
-            return message
-          },
-        },
-      }
-    )
-
-    return res.data
-  } catch (err) {
-    const error = err as AxiosError<ApiError>
-    throw error.response?.data
-  }
-}
+import { ApiError, createBrand } from "./api"
 
 type CreateBrandModal = Pick<ModalProps, "isOpen">
 
 export const CreateBrandModal = ({ isOpen }: CreateBrandModal) => {
   const navigate = useNavigate()
 
-  const createBrandMutation = useMutation<BrandSummary, ApiError, string, unknown>({
+  const createBrandMutation = useMutation<BrandSummaryDto, ApiError, string, unknown>({
     mutationFn: createBrand,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brand-summary-list"] })
