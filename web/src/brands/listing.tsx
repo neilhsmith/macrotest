@@ -1,11 +1,5 @@
 import { useState } from "react"
-import {
-  BRAND_LISTING_QUERY_KEY,
-  BrandSummaryDto,
-  deleteBrands,
-  useBrandListingQuery,
-  useDeleteBrandsMutation,
-} from "./api"
+import { BrandSummaryDto, useBrandListingQuery, useDeleteBrandsMutation } from "./api"
 import {
   DataTable,
   DeleteContextActions,
@@ -15,10 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 import { TableColumn } from "react-data-table-component"
 import { BRAND_ROUTES } from "./routes"
-import { queryClient } from "@/lib/query-client"
-import { useMutation } from "@tanstack/react-query"
-import { ApiError } from "@/api/api-client"
-import toast from "react-hot-toast"
 
 const tableColumns: TableColumn<BrandSummaryDto>[] = [
   {
@@ -59,14 +49,8 @@ export const BrandListing = () => {
   const [clearSelectedToggled, setClearSelectedToggled] = useState(false)
 
   const brandlistingQuery = useBrandListingQuery({ page, pageSize })
-  const deleteBrandsMutation = useMutation<void, ApiError, number[]>({
-    mutationFn: (ids) => deleteBrands({ ids }),
-    onSuccess: (_, ids) => {
-      toast.success(`Deleted ${ids.length} Brand${ids.length > 1 ? "s" : ""}.`)
-      setClearSelectedToggled(!clearSelectedToggled)
-      queryClient.invalidateQueries({ queryKey: [BRAND_LISTING_QUERY_KEY, page, pageSize] })
-    },
-    onError: () => toast.error("Something went wrong. Please try again later."),
+  const deleteBrandsMutation = useDeleteBrandsMutation({
+    onSuccess: () => setClearSelectedToggled(!clearSelectedToggled),
   })
 
   const handlePageChange = (page: number) => {
@@ -89,7 +73,6 @@ export const BrandListing = () => {
     deleteBrandsMutation.mutate(selectedIds)
   }
 
-  const disabled = deleteBrandsMutation.isPaused
   const brandSummaries = brandlistingQuery.data?.items ?? []
   const brandsCount = brandlistingQuery.data?.paginationMetadata?.totalCount
 
@@ -99,11 +82,10 @@ export const BrandListing = () => {
         title={<Header />}
         columns={tableColumns}
         data={brandSummaries}
-        disabled={disabled}
+        disabled={deleteBrandsMutation.isPending || brandlistingQuery.isFetching}
         clearSelectedRows={clearSelectedToggled}
         contextActions={
           <DeleteContextActions
-            disabled={disabled}
             loading={deleteBrandsMutation.isPending}
             selectedItemCount={selected.length}
             onClick={handleDeleteClick}
@@ -113,7 +95,7 @@ export const BrandListing = () => {
         pagination
         paginationServer
         paginationTotalRows={brandsCount}
-        progressPending={brandlistingQuery.isPending}
+        progressPending={brandlistingQuery.isLoading}
         selectableRows
         onChangeRowsPerPage={handlePerPageChange}
         onChangePage={handlePageChange}
