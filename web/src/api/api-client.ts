@@ -29,8 +29,8 @@ instance.interceptors.response.use(
   }
 )
 
-export function axios<T>(config: AxiosRequestConfig<T>) {
-  return instance.request<T>({
+export function axios<TResult, TData = void>(config: AxiosRequestConfig<TData>) {
+  return instance.request<TResult>({
     headers: {
       "Content-Type": "application/json",
       ...config.headers,

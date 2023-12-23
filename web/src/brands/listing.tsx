@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 import { TableColumn } from "react-data-table-component"
 import { BRAND_ROUTES } from "./routes"
+import { PromiseModalProps, renderUncontrolledAsyncModal } from "@/modals/uncontrolled-async-modal"
+import { ConfirmationModal } from "@/modals/confirm-modal"
 
 const tableColumns: TableColumn<BrandSummaryDto>[] = [
   {
@@ -70,7 +72,13 @@ export const BrandListing = () => {
 
   const handleDeleteClick = async () => {
     const selectedIds = selected.map((b) => b.id)
-    deleteBrandsMutation.mutate(selectedIds)
+
+    renderUncontrolledAsyncModal<void, ConfirmBrandsDeletionModalProps>(
+      ConfirmBrandsDeletionModal,
+      {
+        count: selected.length,
+      }
+    ).then(() => deleteBrandsMutation.mutate(selectedIds))
   }
 
   const brandSummaries = brandlistingQuery.data?.items ?? []
@@ -113,5 +121,29 @@ function Header() {
         <Link to="/brands/create">Create Brand</Link>
       </Button>
     </div>
+  )
+}
+
+type ConfirmBrandsDeletionModalProps = {
+  count: number
+} & PromiseModalProps<void>
+
+function ConfirmBrandsDeletionModal({
+  isOpen,
+  onResolve,
+  onReject,
+  count,
+}: ConfirmBrandsDeletionModalProps) {
+  const plural = count > 1
+  const title = `Delete ${count} brand${plural ? "s" : ""}`
+
+  return (
+    <ConfirmationModal
+      isOpen={isOpen}
+      onDismiss={onReject}
+      onConfirm={onResolve}
+      title={title}
+      description="Are you sure? This action cannot be undone."
+    />
   )
 }

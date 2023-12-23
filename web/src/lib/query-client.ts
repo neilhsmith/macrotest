@@ -8,11 +8,11 @@ declare module "@tanstack/react-query" {
   }
 }
 
-export type ErrorCallbackConfig = {
-  onError?: () => void
+export type ErrorCallbackMutationConfig = {
+  onError?: (error: ApiError) => void
 }
-export type SuccessCallbackConfig = {
-  onSuccess?: () => void
+export type SuccessCallbackMutationConfig<T = void> = {
+  onSuccess?: (data: T) => void
 }
 
 export const queryClient = new QueryClient({

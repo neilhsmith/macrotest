@@ -1,6 +1,6 @@
 import { axios } from "@/api/api-client"
 import { PaginatedList, PaginatedQueryPayload, getPaginationMetadata } from "@/api/pagination"
-import { SuccessCallbackConfig, queryClient } from "@/lib/query-client"
+import { SuccessCallbackMutationConfig, queryClient } from "@/lib/query-client"
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query"
 import toast from "react-hot-toast"
 
@@ -11,6 +11,10 @@ export type BrandSummaryDto = {
 
   name: string
   foodCount: number
+}
+
+export type UpsertBrandDto = {
+  name: string
 }
 
 async function getBrandListing({ page, pageSize }: PaginatedQueryPayload) {
@@ -29,9 +33,25 @@ async function getBrandListing({ page, pageSize }: PaginatedQueryPayload) {
   } as PaginatedList<BrandSummaryDto>
 }
 
-async function createBrand() {}
+async function createBrand(data: UpsertBrandDto) {
+  const res = await axios<BrandSummaryDto, UpsertBrandDto>({
+    method: "post",
+    url: "/brands",
+    data,
+  })
 
-async function updateBrand() {}
+  return res.data
+}
+
+async function updateBrand(id: number, data: UpsertBrandDto) {
+  const res = await axios<BrandSummaryDto, UpsertBrandDto>({
+    method: "put",
+    url: `/brands/${id}`,
+    data,
+  })
+
+  return res.data
+}
 
 export async function deleteBrands({ ids }: { ids: number[] }) {
   await axios({
@@ -52,11 +72,21 @@ export const useBrandListingQuery = (payload: PaginatedQueryPayload) =>
     placeholderData: keepPreviousData,
   })
 
-export const useDeleteBrandsMutation = (config: SuccessCallbackConfig) =>
+export const useCreateBrandMutation = (config?: SuccessCallbackMutationConfig<BrandSummaryDto>) =>
+  useMutation({
+    mutationFn: createBrand,
+    onSuccess: (data) => {
+      config?.onSuccess && config.onSuccess(data)
+      toast.success("Brand created.")
+      queryClient.invalidateQueries({ queryKey: [BRAND_LISTING_QUERY_KEY] })
+    },
+  })
+
+export const useDeleteBrandsMutation = (config?: SuccessCallbackMutationConfig) =>
   useMutation({
     mutationFn: (ids: number[]) => deleteBrands({ ids }),
     onSuccess: (_, ids) => {
-      config.onSuccess && config.onSuccess()
+      config?.onSuccess && config.onSuccess()
       toast.success(`Deleted ${ids.length} Brand${ids.length > 1 ? "s" : ""}.`)
       queryClient.invalidateQueries({ queryKey: [BRAND_LISTING_QUERY_KEY] })
     },
