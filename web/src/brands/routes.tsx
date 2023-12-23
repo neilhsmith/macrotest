@@ -1,14 +1,13 @@
 import { Outlet, RouteObject } from "react-router-dom"
 import { number, route } from "react-router-typesafe-routes/dom"
 import { BrandListing } from "./listing"
-import { UpdateBrandModal } from "./upsert"
+import { UpdateBrand } from "./upsert"
 
 export const BRAND_ROUTES = route(
   "brands",
   {},
   {
     INDEX: route(""),
-    CREATE: route("create", {}),
     DETAIL: route(":id", { params: { id: number().default(0) } }),
   }
 )
@@ -24,17 +23,7 @@ export const brandRoutes: RouteObject = {
   children: [
     {
       path: BRAND_ROUTES.DETAIL.path,
-      element: <UpdateBrandModal />,
+      element: <UpdateBrand />,
     },
   ],
-  // children: [
-  //   {
-  //     path: BRAND_ROUTES.CREATE.path,
-  //     element: <CreateBrandModal isOpen={true} />, // always open
-  //   },
-  //   {
-  //     path: BRAND_ROUTES.DETAIL.path,
-  //     element: <div>brand detail</div>,
-  //   },
-  // ],
 }

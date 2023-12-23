@@ -5,7 +5,6 @@ import { Label } from "@/components/ui/label"
 import { Modal, ModalHeader, ModalProps, ModalTitle } from "@/modals/modal"
 import { FiPlus, FiSlash } from "react-icons/fi"
 import {
-  BrandSummaryDto,
   UpsertBrandDto,
   useBrandQuery,
   useCreateBrandMutation,
@@ -29,6 +28,15 @@ export function CreateBrandTrigger() {
   )
 }
 
+export function UpdateBrand() {
+  const navigate = useNavigate()
+  const { id } = useTypedParams(BRAND_ROUTES.DETAIL)
+
+  const dismiss = () => navigate(BRAND_ROUTES.INDEX.path)
+
+  return <UpdateBrandModal id={id} onDismiss={dismiss} />
+}
+
 function CreateBrandModal({ onDismiss }: Omit<ModalProps, "isOpen">) {
   const createBrandMutation = useCreateBrandMutation({
     onSuccess: onDismiss,
@@ -49,27 +57,18 @@ function CreateBrandModal({ onDismiss }: Omit<ModalProps, "isOpen">) {
   )
 }
 
-export function UpdateBrandModal() {
-  const { id } = useTypedParams(BRAND_ROUTES.DETAIL)
-  const navigate = useNavigate()
-
+function UpdateBrandModal({ id, onDismiss }: { id: number } & Omit<ModalProps, "isOpen">) {
   const getBrandQuery = useBrandQuery(id)
-
   const updateBrandMutation = useUpdateBrandMutation({
-    onSuccess: () => dismiss(),
+    onSuccess: () => onDismiss(),
   })
 
   const handleSubmit = (data: UpsertBrandDto) => {
     updateBrandMutation.mutate({ id, data })
   }
 
-  const dismiss = () => {
-    navigate(BRAND_ROUTES.INDEX.path)
-  }
-
-  // todo: async state container around the form while getBrandQuery is loading
   return (
-    <Modal isOpen={true} onDismiss={dismiss}>
+    <Modal isOpen={true} onDismiss={onDismiss}>
       <ModalHeader>
         <ModalTitle>Update Brand</ModalTitle>
       </ModalHeader>
@@ -80,7 +79,7 @@ export function UpdateBrandModal() {
           initialValues={getBrandQuery.data}
           loading={updateBrandMutation.isPending}
           errors={updateBrandMutation.error?.errors}
-          onCancel={dismiss}
+          onCancel={onDismiss}
           onSubmit={handleSubmit}
         />
       )}
