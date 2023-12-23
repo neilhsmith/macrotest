@@ -1,10 +1,8 @@
 import { QueryClientProvider } from "@tanstack/react-query"
 import { Outlet } from "react-router-dom"
-import { ToastContainer } from "react-toastify"
 import { Header } from "./header"
 import { queryClient } from "./lib/query-client"
-
-import "react-toastify/dist/ReactToastify.css"
+import { Toaster } from "react-hot-toast"
 
 function App() {
   return (
@@ -17,7 +15,7 @@ function App() {
           </QueryClientProvider>
         </div>
       </div>
-      <ToastContainer />
+      <Toaster position="top-right" reverseOrder={false} />
     </>
   )
 }

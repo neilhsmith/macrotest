@@ -2,6 +2,7 @@ import { useState } from "react"
 import {
   BRAND_LISTING_QUERY_KEY,
   BrandSummaryDto,
+  deleteBrands,
   useBrandListingQuery,
   useDeleteBrandsMutation,
 } from "./api"
@@ -15,6 +16,9 @@ import { Link } from "react-router-dom"
 import { TableColumn } from "react-data-table-component"
 import { BRAND_ROUTES } from "./routes"
 import { queryClient } from "@/lib/query-client"
+import { useMutation } from "@tanstack/react-query"
+import { ApiError } from "@/api/api-client"
+import toast from "react-hot-toast"
 
 const tableColumns: TableColumn<BrandSummaryDto>[] = [
   {
@@ -55,7 +59,15 @@ export const BrandListing = () => {
   const [clearSelectedToggled, setClearSelectedToggled] = useState(false)
 
   const brandlistingQuery = useBrandListingQuery({ page, pageSize })
-  const deleteBrandsMutation = useDeleteBrandsMutation()
+  const deleteBrandsMutation = useMutation<void, ApiError, number[]>({
+    mutationFn: (ids) => deleteBrands({ ids }),
+    onSuccess: (_, ids) => {
+      toast.success(`Deleted ${ids.length} Brand${ids.length > 1 ? "s" : ""}.`)
+      setClearSelectedToggled(!clearSelectedToggled)
+      queryClient.invalidateQueries({ queryKey: [BRAND_LISTING_QUERY_KEY, page, pageSize] })
+    },
+    onError: () => toast.error("Something went wrong. Please try again later."),
+  })
 
   const handlePageChange = (page: number) => {
     setPage(page)
@@ -75,12 +87,9 @@ export const BrandListing = () => {
   const handleDeleteClick = async () => {
     const selectedIds = selected.map((b) => b.id)
     deleteBrandsMutation.mutate(selectedIds)
-
-    setClearSelectedToggled(!clearSelectedToggled)
-    queryClient.invalidateQueries({ queryKey: [BRAND_LISTING_QUERY_KEY] })
   }
 
-  const pending = brandlistingQuery.isPending || deleteBrandsMutation.isPending
+  const disabled = deleteBrandsMutation.isPaused
   const brandSummaries = brandlistingQuery.data?.items ?? []
   const brandsCount = brandlistingQuery.data?.paginationMetadata?.totalCount
 
@@ -90,15 +99,21 @@ export const BrandListing = () => {
         title={<Header />}
         columns={tableColumns}
         data={brandSummaries}
+        disabled={disabled}
         clearSelectedRows={clearSelectedToggled}
         contextActions={
-          <DeleteContextActions selectedItemCount={selected.length} onClick={handleDeleteClick} />
+          <DeleteContextActions
+            disabled={disabled}
+            loading={deleteBrandsMutation.isPending}
+            selectedItemCount={selected.length}
+            onClick={handleDeleteClick}
+          />
         }
         highlightOnHover
         pagination
         paginationServer
         paginationTotalRows={brandsCount}
-        progressPending={pending}
+        progressPending={brandlistingQuery.isPending}
         selectableRows
         onChangeRowsPerPage={handlePerPageChange}
         onChangePage={handlePageChange}

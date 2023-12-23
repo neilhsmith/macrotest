@@ -1,7 +1,6 @@
 import { ApiError, axios } from "@/api/api-client"
 import { PaginatedList, PaginatedQueryPayload, getPaginationMetadata } from "@/api/pagination"
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query"
-import { toast } from "react-toastify"
 
 export type BrandSummaryDto = {
   id: number
@@ -32,7 +31,7 @@ async function createBrand() {}
 
 async function updateBrand() {}
 
-async function deleteBrands({ ids }: { ids: number[] }) {
+export async function deleteBrands({ ids }: { ids: number[] }) {
   await axios({
     method: "post",
     url: "/brands/delete",
@@ -47,18 +46,16 @@ export const BRAND_LISTING_QUERY_KEY = "brand-listing" as const
 export const useBrandListingQuery = (payload: PaginatedQueryPayload) =>
   useQuery<PaginatedList<BrandSummaryDto>, ApiError>({
     queryKey: [BRAND_LISTING_QUERY_KEY, payload.page, payload.pageSize],
-    queryFn: () =>
-      toast.promise(getBrandListing(payload), {
-        error: "Something went wrong. Please try again later.",
-      }),
-    placeholderData: keepPreviousData,
+    queryFn: () => getBrandListing(payload),
+    //placeholderData: keepPreviousData,
   })
 
 export const useDeleteBrandsMutation = () =>
-  useMutation({
-    mutationFn: (ids: number[]) =>
-      toast.promise(deleteBrands({ ids }), {
-        success: `Deleted ${ids.length} Brand${ids.length > 1 ? "s" : ""}.`,
-        error: "Something went wrong. Please try again later.",
-      }),
+  useMutation<void, ApiError, number[]>({
+    // mutationFn: (ids: number[]) =>
+    //   toast.promise(deleteBrands({ ids }), {
+    //     success: `Deleted ${ids.length} Brand${ids.length > 1 ? "s" : ""}.`,
+    //     error: "Something went wrong. Please try again later.",
+    //   }),
+    mutationFn: (ids: number[]) => deleteBrands({ ids }),
   })
