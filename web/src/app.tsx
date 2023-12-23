@@ -2,7 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import { Outlet } from "react-router-dom"
 import { Header } from "./header"
 import { queryClient } from "./lib/query-client"
-import { Toaster } from "react-hot-toast"
+import { Toaster } from "@/components/ui/sonner"
 
 function App() {
   return (
@@ -15,7 +15,7 @@ function App() {
           </QueryClientProvider>
         </div>
       </div>
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster />
     </>
   )
 }

@@ -1,6 +1,6 @@
 import { ApiError } from "@/api/api-client"
 import { QueryClient } from "@tanstack/react-query"
-import toast from "react-hot-toast"
+import { toast } from "sonner"
 
 declare module "@tanstack/react-query" {
   interface Register {

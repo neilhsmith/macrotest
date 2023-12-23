@@ -2,7 +2,7 @@ import { axios } from "@/api/api-client"
 import { PaginatedList, PaginatedQueryPayload, getPaginationMetadata } from "@/api/pagination"
 import { SuccessCallbackMutationConfig, queryClient } from "@/lib/query-client"
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query"
-import toast from "react-hot-toast"
+import { toast } from "sonner"
 
 export type BrandSummaryDto = {
   id: number
