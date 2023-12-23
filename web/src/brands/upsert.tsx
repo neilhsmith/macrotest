@@ -117,7 +117,7 @@ function UpsertBrandForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="mb-4 flex flex-col gap-2">
+      <div className="mb-6 flex flex-col gap-2">
         <Label htmlFor="name">Name</Label>
         <Input
           id="name"
