@@ -1,6 +1,7 @@
-import { RouteObject } from "react-router-dom"
+import { Outlet, RouteObject } from "react-router-dom"
 import { number, route } from "react-router-typesafe-routes/dom"
 import { BrandListing } from "./listing"
+import { UpdateBrandModal } from "./upsert"
 
 export const BRAND_ROUTES = route(
   "brands",
@@ -17,9 +18,15 @@ export const brandRoutes: RouteObject = {
   element: (
     <>
       <BrandListing />
-      {/* <Outlet /> */}
+      <Outlet />
     </>
   ),
+  children: [
+    {
+      path: BRAND_ROUTES.DETAIL.path,
+      element: <UpdateBrandModal />,
+    },
+  ],
   // children: [
   //   {
   //     path: BRAND_ROUTES.CREATE.path,

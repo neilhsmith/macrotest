@@ -29,7 +29,7 @@ queryClient.setDefaultOptions({
       let message = "Something went wrong. Please try again later."
 
       if (err.status === 422) {
-        message = err.detail
+        message = err.title
       }
 
       toast.error(message)

@@ -17,6 +17,15 @@ export type UpsertBrandDto = {
   name: string
 }
 
+async function getBrand(id: number) {
+  const res = await axios<BrandSummaryDto>({
+    method: "get",
+    url: `/brands/${id}`,
+  })
+
+  return res.data
+}
+
 async function getBrandListing({ page, pageSize }: PaginatedQueryPayload) {
   const res = await axios<BrandSummaryDto[]>({
     method: "get",
@@ -63,7 +72,14 @@ export async function deleteBrands({ ids }: { ids: number[] }) {
   })
 }
 
+export const BRAND_DETAIL_QUERY_KEY = "brand-detail" as const
 export const BRAND_LISTING_QUERY_KEY = "brand-listing" as const
+
+export const useBrandQuery = (id: number) =>
+  useQuery({
+    queryKey: [BRAND_DETAIL_QUERY_KEY, id],
+    queryFn: () => getBrand(id),
+  })
 
 export const useBrandListingQuery = (payload: PaginatedQueryPayload) =>
   useQuery({
@@ -78,6 +94,16 @@ export const useCreateBrandMutation = (config?: SuccessCallbackMutationConfig<Br
     onSuccess: (data) => {
       config?.onSuccess && config.onSuccess(data)
       toast.success("Brand created.")
+      queryClient.invalidateQueries({ queryKey: [BRAND_LISTING_QUERY_KEY] })
+    },
+  })
+
+export const useUpdateBrandMutation = (config?: SuccessCallbackMutationConfig<BrandSummaryDto>) =>
+  useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpsertBrandDto }) => updateBrand(id, data),
+    onSuccess: (data) => {
+      config?.onSuccess && config.onSuccess(data)
+      toast.success("Brand updated.")
       queryClient.invalidateQueries({ queryKey: [BRAND_LISTING_QUERY_KEY] })
     },
   })

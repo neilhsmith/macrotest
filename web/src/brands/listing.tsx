@@ -1,16 +1,16 @@
 import { useState } from "react"
+import { BRAND_ROUTES } from "./routes"
 import { BrandSummaryDto, useBrandListingQuery, useDeleteBrandsMutation } from "./api"
 import {
   DataTable,
   DeleteContextActions,
   SelectedRowsChangeEventPayload,
 } from "@/components/data-table"
-import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 import { TableColumn } from "react-data-table-component"
-import { BRAND_ROUTES } from "./routes"
 import { PromiseModalProps, renderUncontrolledAsyncModal } from "@/modals/uncontrolled-async-modal"
 import { ConfirmationModal } from "@/modals/confirm-modal"
+import { CreateBrandTrigger } from "./upsert"
 
 const tableColumns: TableColumn<BrandSummaryDto>[] = [
   {
@@ -117,9 +117,7 @@ function Header() {
   return (
     <div className="flex justify-between items-center">
       <div>Brands</div>
-      <Button size="sm" variant="secondary" asChild>
-        <Link to="/brands/create">Create Brand</Link>
-      </Button>
+      <CreateBrandTrigger />
     </div>
   )
 }
