@@ -4,6 +4,7 @@ import { Slot } from "@radix-ui/react-slot"
 import {
   Controller,
   ControllerProps,
+  FieldError,
   FieldPath,
   FieldValues,
   FormProvider,
@@ -136,21 +137,26 @@ const FormMessage = React.forwardRef<
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
   const { error, formMessageId } = useFormField()
-  // const body = error ? String(error?.message) : children
 
   /**
    * FIXME:
-   * - errorArray is a hack to show the first validation error returned
-   * - the api returns a Record<string, string[]> when validation errors occur
-   *   but this shadcn / react-hook-form setup only handles 1 validation error per field at a time
-   * - so this is converting react-hook-form's FieldError to a string[] and then displaying the 1st error
-   *
+   * - actual is a hack:
+   *   - our api returns validation errors as Record<string, string[]> ({ propertyName: ['error 1', 'error 2'] })
+   *     but shadcn / react-hook-form only handle 1 FieldError at a time
+   *   - so if error is an array, we convert the first item to a FieldError so that 1 error is shown at a time
+   *     until there are 0 errors left
    * TODO: this will ideally show multiple validation errors at once and the error coming from useFormField
    *       will be typed as a Record<string, string[]>
    */
 
-  const errorArray = (Array.isArray(error) ? error : [error]) as (string | undefined)[]
-  const body = errorArray[0] ? String(errorArray[0]) : children
+  const actual = Array.isArray(error)
+    ? ({
+        type: "server",
+        message: error[0],
+      } as FieldError)
+    : error
+
+  const body = actual ? String(actual?.message) : children
 
   if (!body) {
     return null
