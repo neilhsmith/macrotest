@@ -27,8 +27,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 
-type UpsertBrandFormFields = z.infer<typeof upsertBrandFormSchema>
-const upsertBrandFormSchema = z.object({
+type UpsertBrandFields = z.infer<typeof upsertBrandSchema>
+const upsertBrandSchema = z.object({
   name: z.string().min(1).max(128),
 })
 
@@ -65,7 +65,7 @@ function CreateBrandModal({ onDismiss }: Omit<ModalProps, "isOpen">) {
         <ModalTitle>Create Brand</ModalTitle>
       </ModalHeader>
       <UpsertBrandForm
-        loading={createBrandMutation.isPending}
+        isPending={createBrandMutation.isPending}
         errors={createBrandMutation.error?.errors}
         onCancel={onDismiss}
         onSubmit={createBrandMutation.mutate}
@@ -89,25 +89,25 @@ function UpdateBrandModal({ id, onDismiss }: { id: number } & Omit<ModalProps, "
       <ModalHeader>
         <ModalTitle>Update Brand</ModalTitle>
       </ModalHeader>
-      {getBrandQuery.isLoading ? (
-        <UpsertBrandFormSkeleton />
-      ) : (
-        <UpsertBrandForm
-          defaultValues={getBrandQuery.data}
-          loading={updateBrandMutation.isPending}
-          errors={updateBrandMutation.error?.errors}
-          onCancel={onDismiss}
-          onSubmit={handleSubmit}
-        />
-      )}
+      <UpsertBrandForm
+        defaultValues={getBrandQuery.data}
+        isLoading={getBrandQuery.isLoading}
+        isPending={updateBrandMutation.isPending}
+        errors={updateBrandMutation.error?.errors}
+        onCancel={onDismiss}
+        onSubmit={handleSubmit}
+      />
     </Modal>
   )
 }
 
+// ---
+
 type UpsertBrandFormProps = {
-  defaultValues?: UpsertBrandFormFields
+  defaultValues?: UpsertBrandFields
   errors?: Record<string, string[]>
-  loading: boolean
+  isLoading?: boolean
+  isPending: boolean
   onCancel?: () => void
   onSubmit: (formValues: UpsertBrandDto) => void
 }
@@ -115,15 +115,20 @@ type UpsertBrandFormProps = {
 function UpsertBrandForm({
   defaultValues,
   errors,
-  loading,
+  isLoading,
+  isPending,
   onCancel,
   onSubmit,
 }: UpsertBrandFormProps) {
-  const form = useForm<UpsertBrandFormFields>({
-    resolver: zodResolver(upsertBrandFormSchema),
+  const form = useForm<UpsertBrandFields>({
+    resolver: zodResolver(upsertBrandSchema),
     defaultValues,
     errors,
   })
+
+  if (isLoading) {
+    return <UpsertBrandFormSkeleton />
+  }
 
   return (
     <Form {...form}>
@@ -146,14 +151,14 @@ function UpsertBrandForm({
             <Button
               type="button"
               variant="secondary"
-              disabled={loading}
+              disabled={isPending}
               icon={<FiSlash />}
               onClick={onCancel}
             >
               Cancel
             </Button>
           )}
-          <Button type="submit" loading={loading} icon={<FaPlus />}>
+          <Button type="submit" loading={isPending} icon={<FaPlus />}>
             Submit
           </Button>
         </FormActions>
@@ -168,7 +173,6 @@ function UpsertBrandFormSkeleton() {
       <div className="space-y-4">
         <Skeleton className="h-4 w-[50px]" />
         <Skeleton className="h-7 w-full" />
-        <Skeleton className="h-4 w-[62px]" />
       </div>
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
         <Skeleton className="h-9 w-[100px]" />
