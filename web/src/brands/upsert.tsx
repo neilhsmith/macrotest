@@ -89,14 +89,17 @@ function UpdateBrandModal({ id, onDismiss }: { id: number } & Omit<ModalProps, "
       <ModalHeader>
         <ModalTitle>Update Brand</ModalTitle>
       </ModalHeader>
-      <UpsertBrandForm
-        defaultValues={getBrandQuery.data}
-        isLoading={getBrandQuery.isLoading}
-        isPending={updateBrandMutation.isPending}
-        errors={updateBrandMutation.error?.errors}
-        onCancel={onDismiss}
-        onSubmit={handleSubmit}
-      />
+      {getBrandQuery.isLoading ? (
+        <UpsertBrandFormSkeleton />
+      ) : (
+        <UpsertBrandForm
+          defaultValues={getBrandQuery.data}
+          isPending={updateBrandMutation.isPending}
+          errors={updateBrandMutation.error?.errors}
+          onCancel={onDismiss}
+          onSubmit={handleSubmit}
+        />
+      )}
     </Modal>
   )
 }
@@ -106,7 +109,6 @@ function UpdateBrandModal({ id, onDismiss }: { id: number } & Omit<ModalProps, "
 type UpsertBrandFormProps = {
   defaultValues?: UpsertBrandFields
   errors?: Record<string, string[]>
-  isLoading?: boolean
   isPending: boolean
   onCancel?: () => void
   onSubmit: (formValues: UpsertBrandDto) => void
@@ -115,7 +117,6 @@ type UpsertBrandFormProps = {
 function UpsertBrandForm({
   defaultValues,
   errors,
-  isLoading,
   isPending,
   onCancel,
   onSubmit,
@@ -125,10 +126,6 @@ function UpsertBrandForm({
     defaultValues,
     errors,
   })
-
-  if (isLoading) {
-    return <UpsertBrandFormSkeleton />
-  }
 
   return (
     <Form {...form}>
@@ -173,6 +170,7 @@ function UpsertBrandFormSkeleton() {
       <div className="space-y-4">
         <Skeleton className="h-4 w-[50px]" />
         <Skeleton className="h-7 w-full" />
+        <Skeleton className="h-4 w-[62px]" />
       </div>
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
         <Skeleton className="h-9 w-[100px]" />
