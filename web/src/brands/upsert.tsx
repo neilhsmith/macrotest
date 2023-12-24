@@ -1,9 +1,10 @@
-import { FormEventHandler, useState } from "react"
+import { useState } from "react"
+import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Modal, ModalHeader, ModalProps, ModalTitle } from "@/modals/modal"
-import { FiPlus, FiSlash } from "react-icons/fi"
+import { FaPlus } from "react-icons/fa6"
+import { FiSlash } from "react-icons/fi"
 import {
   UpsertBrandDto,
   useBrandQuery,
@@ -14,13 +15,29 @@ import { useTypedParams } from "react-router-typesafe-routes/dom"
 import { BRAND_ROUTES } from "./routes"
 import { useNavigate } from "react-router-dom"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormActions,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+
+type UpsertBrandFormFields = z.infer<typeof upsertBrandFormSchema>
+const upsertBrandFormSchema = z.object({
+  name: z.string().min(1).max(128),
+})
 
 export function CreateBrandTrigger() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <>
-      <Button size="sm" variant="secondary" icon={<FiPlus />} onClick={() => setIsOpen(true)}>
+      <Button size="sm" variant="secondary" icon={<FaPlus />} onClick={() => setIsOpen(true)}>
         Create Brand
       </Button>
       {isOpen && <CreateBrandModal onDismiss={() => setIsOpen(false)} />}
@@ -76,7 +93,7 @@ function UpdateBrandModal({ id, onDismiss }: { id: number } & Omit<ModalProps, "
         <UpsertBrandFormSkeleton />
       ) : (
         <UpsertBrandForm
-          initialValues={getBrandQuery.data}
+          defaultValues={getBrandQuery.data}
           loading={updateBrandMutation.isPending}
           errors={updateBrandMutation.error?.errors}
           onCancel={onDismiss}
@@ -87,91 +104,75 @@ function UpdateBrandModal({ id, onDismiss }: { id: number } & Omit<ModalProps, "
   )
 }
 
-type UpsertBrandProps = {
-  initialValues?: UpsertBrandDto
-  loading: boolean
+type UpsertBrandFormProps = {
+  defaultValues?: UpsertBrandFormFields
   errors?: Record<string, string[]>
+  loading: boolean
   onCancel?: () => void
-  onSubmit: (payload: UpsertBrandDto) => void
+  onSubmit: (formValues: UpsertBrandDto) => void
 }
 
 function UpsertBrandForm({
-  initialValues,
+  defaultValues,
+  errors,
   loading,
-  errors = {},
   onCancel,
   onSubmit,
-}: UpsertBrandProps) {
-  const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
-    event.preventDefault()
-
-    const formData = new FormData(event.currentTarget)
-    const name = formData.get("name") as string
-
-    const payload: UpsertBrandDto = {
-      name,
-    }
-
-    onSubmit(payload)
-  }
+}: UpsertBrandFormProps) {
+  const form = useForm<UpsertBrandFormFields>({
+    resolver: zodResolver(upsertBrandFormSchema),
+    defaultValues,
+    errors,
+  })
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="mb-6 flex flex-col gap-2">
-        <Label htmlFor="name">Name</Label>
-        <Input
-          id="name"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
           name="name"
-          placeholder="Brand name"
-          autoFocus
-          required
-          disabled={loading}
-          defaultValue={initialValues?.name}
-          className={`${!!errors["name"] && "border-red-500"}`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Brand name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {!!errors["name"] && (
-          <ul>
-            {errors["name"].map((err) => (
-              <li
-                key={err}
-                className="text-red-500 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {err}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-      <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-        {!!onCancel && (
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={loading}
-            icon={<FiSlash />}
-            onClick={onCancel}
-          >
-            Cancel
+        <FormActions>
+          {!!onCancel && (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={loading}
+              icon={<FiSlash />}
+              onClick={onCancel}
+            >
+              Cancel
+            </Button>
+          )}
+          <Button type="submit" loading={loading} icon={<FaPlus />}>
+            Submit
           </Button>
-        )}
-        <Button type="submit" loading={loading} icon={<FiPlus />}>
-          Submit
-        </Button>
-      </div>
-    </form>
+        </FormActions>
+      </form>
+    </Form>
   )
 }
 
 function UpsertBrandFormSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="space-y-1">
+    <div className="space-y-6">
+      <div className="space-y-4">
         <Skeleton className="h-4 w-[50px]" />
         <Skeleton className="h-7 w-full" />
+        <Skeleton className="h-4 w-[62px]" />
       </div>
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-        <Skeleton className="h-8 w-[100px]" />
-        <Skeleton className="h-8 w-[100px]" />
+        <Skeleton className="h-9 w-[100px]" />
+        <Skeleton className="h-9 w-[100px]" />
       </div>
     </div>
   )
