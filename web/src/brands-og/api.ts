@@ -1,6 +1,6 @@
 import { axios } from "@/api/api-client"
 import { PaginatedList, PaginatedQueryPayload, getPaginationMetadata } from "@/api/pagination"
-import { SuccessCallbackMutationConfig, queryClient } from "@/lib/query-client"
+import { SuccessCallbackMutationConfig, queryClient } from "@/query-client"
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 
