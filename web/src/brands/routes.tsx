@@ -7,3 +7,11 @@ export const brandsIndexRoute = new Route({
   path: "/brands",
   component: BrandsPage,
 })
+
+const brandDetailsRoute = new Route({
+  getParentRoute: () => brandsIndexRoute,
+  path: "/brands/$brandId",
+  component: () => <div>dfadfasdf</div>,
+})
+
+brandsIndexRoute.addChildren([brandDetailsRoute])
