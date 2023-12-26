@@ -1,9 +1,11 @@
 import { AxiosResponse } from "axios"
+import { z } from "zod"
 
-export type PaginatedQueryPayload = {
-  page: number
-  pageSize: number
-}
+export type PaginationParams = z.infer<typeof paginationParamsSchema>
+export const paginationParamsSchema = z.object({
+  page: z.number().catch(1),
+  pageSize: z.number().catch(10),
+})
 
 export type PaginationMetadata = {
   totalCount: number

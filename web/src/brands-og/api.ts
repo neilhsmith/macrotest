@@ -1,5 +1,5 @@
 import { axios } from "@/api/api-client"
-import { PaginatedList, PaginatedQueryPayload, getPaginationMetadata } from "@/api/pagination"
+import { PaginatedList, PaginationParams, getPaginationMetadata } from "@/api/pagination"
 import { SuccessCallbackMutationConfig, queryClient } from "@/query-client"
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -26,7 +26,7 @@ async function getBrand(id: number) {
   return res.data
 }
 
-async function getBrandListing({ page, pageSize }: PaginatedQueryPayload) {
+async function getBrandListing({ page, pageSize }: PaginationParams) {
   const res = await axios<BrandSummaryDto[]>({
     method: "get",
     url: `/brands`,
@@ -81,7 +81,7 @@ export const useBrandQuery = (id: number) =>
     queryFn: () => getBrand(id),
   })
 
-export const useBrandListingQuery = (payload: PaginatedQueryPayload) =>
+export const useBrandListingQuery = (payload: PaginationParams) =>
   useQuery({
     queryKey: [BRAND_LISTING_QUERY_KEY, payload.page, payload.pageSize],
     queryFn: () => getBrandListing(payload),
