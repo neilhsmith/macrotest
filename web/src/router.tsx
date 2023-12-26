@@ -3,7 +3,7 @@ import { App } from "@/app"
 import { queryClient } from "@/query-client"
 import { QueryClient } from "@tanstack/react-query"
 import { timelineIndexRoute } from "./timeline/routes"
-import { brandsIndexRoute } from "./brands/routes"
+import { brandsRoute } from "./brands/routes"
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -17,7 +17,7 @@ export const rootRoute = rootRouteWithContext<{
   component: App,
 })
 
-const routeTree = rootRoute.addChildren([timelineIndexRoute, brandsIndexRoute])
+const routeTree = rootRoute.addChildren([timelineIndexRoute, brandsRoute])
 
 export const router = new Router({
   routeTree,
