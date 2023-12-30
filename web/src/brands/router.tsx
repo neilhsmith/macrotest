@@ -1,7 +1,7 @@
 import { rootRoute } from "@/router"
 import { Route } from "@tanstack/react-router"
 import { BrandsLayout } from "./layout"
-import { brandsListingRoute } from "./routes/listing"
+import { brandsIndexRoute } from "./routes"
 import { brandDetailsRoute } from "./routes/details"
 
 export const brandsRoute = new Route({
@@ -10,4 +10,4 @@ export const brandsRoute = new Route({
   component: BrandsLayout,
 })
 
-brandsRoute.addChildren([brandsListingRoute, brandDetailsRoute])
+brandsRoute.addChildren([brandsIndexRoute, brandDetailsRoute])

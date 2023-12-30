@@ -3,7 +3,7 @@ import { paginationParamsSchema } from "@/api/pagination"
 import { brandsRoute } from "../router"
 import { useCallback } from "react"
 
-export const brandsListingRoute = new Route({
+export const brandsIndexRoute = new Route({
   getParentRoute: () => brandsRoute,
   path: "/",
   component: BrandsIndexRouteComponent,
@@ -11,7 +11,7 @@ export const brandsListingRoute = new Route({
 })
 
 function BrandsIndexRouteComponent() {
-  const { page, pageSize } = brandsListingRoute.useSearch()
+  const { page, pageSize } = brandsIndexRoute.useSearch()
   const navigate = useNavigate({ from: "/brands" })
 
   const changePage = useCallback(
